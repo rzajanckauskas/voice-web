@@ -9,7 +9,7 @@ const translatedLocales = require('../../../locales/translated.json');
 import { isProduction } from '../utility';
 import API from './api';
 
-export const DEFAULT_LOCALE = 'en';
+export const DEFAULT_LOCALE = 'lt';
 export const LOCALES = isProduction()
   ? (translatedLocales as string[])
   : locales;
