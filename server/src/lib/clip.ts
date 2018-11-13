@@ -111,8 +111,8 @@ export default class Clip {
 
     // Where is our audio clip going to be located?
     const folder = client_id + '/';
-    const filePrefix = hash(sentence);
-    const clipFileName = folder + filePrefix + '.mp3';
+    const filePrefix = headers.sentence_id;
+    const clipFileName = folder + client_id + '_' + filePrefix + '.mp3';
     const sentenceFileName = folder + filePrefix + '.txt';
 
     // if the folder does not exist, we create it
