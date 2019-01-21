@@ -10,6 +10,7 @@ xcuserdata/
 .DS_Store
 .vscode/
 ZZidea
+.idea
 
 # Nubis
 nubis/librarian-puppet.tar.gz
