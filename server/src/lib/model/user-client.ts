@@ -70,7 +70,7 @@ const UserClient = {
         FROM user_clients u
         LEFT JOIN user_client_accents accents on u.client_id = accents.client_id
         LEFT JOIN locales on accents.locale_id = locales.id
-        WHERE (u.client_id = ? OR email = ?) AND sso_id IS NULL
+        WHERE (u.client_id = ? OR email = ?) AND !has_login
       `,
       [client_id || null, email || null]
     );
@@ -88,25 +88,23 @@ const UserClient = {
     );
   },
 
-  async findAccount(sso_id: string): Promise<UserClient> {
+  async findAccount(email: string): Promise<UserClient> {
     const [rows] = await db.query(
       `
         SELECT DISTINCT
           u.*,
           accents.accent,
           locales.name AS locale,
-          COUNT(DISTINCT clips.id) AS clips_count,
-          COUNT(DISTINCT votes.id) AS votes_count
+          (SELECT COUNT(*) FROM clips WHERE u.client_id = clips.client_id) AS clips_count,
+          (SELECT COUNT(*) FROM votes WHERE u.client_id = votes.client_id) AS votes_count
         FROM user_clients u
         LEFT JOIN user_client_accents accents on u.client_id = accents.client_id
         LEFT JOIN locales on accents.locale_id = locales.id
-        LEFT JOIN clips on u.client_id = clips.client_id
-        LEFT JOIN votes on u.client_id = votes.client_id
-        WHERE u.sso_id = ?
-        GROUP BY u.client_id
+        WHERE u.email = ? AND has_login
+        GROUP BY u.client_id, accents.id
         ORDER BY accents.id ASC
       `,
-      [sso_id]
+      [email]
     );
 
     return rows.length == 0
@@ -138,24 +136,27 @@ const UserClient = {
   },
 
   async saveAccount(
-    sso_id: string,
-    { client_id, email, locales, ...data }: UserClient
+    email: string,
+    { client_id, locales, ...data }: UserClient
   ): Promise<UserClient> {
-    const [[[account]], [clients]] = await Promise.all([
-      db.query('SELECT client_id FROM user_clients WHERE sso_id = ?', [sso_id]),
+    let [accountClientId, [clients]] = await Promise.all([
+      UserClient.findClientId(email),
       email
-        ? db.query('SELECT client_id FROM user_clients WHERE email = ?', [
-            email,
-          ])
+        ? db.query(
+            'SELECT client_id FROM user_clients WHERE email = ? AND !has_login',
+            [email]
+          )
         : [],
     ]);
 
-    const accountClientId = account ? account.client_id : client_id;
+    if (!accountClientId) {
+      accountClientId = client_id;
+    }
     const clientIds = clients.map((c: any) => c.client_id).concat(client_id);
 
     const userData = await Promise.all(
       Object.entries({
-        sso_id,
+        has_login: true,
         email,
         ...pick(
           data,
@@ -177,27 +178,20 @@ const UserClient = {
     );
 
     await Promise.all([
-      db.query('UPDATE IGNORE clips SET client_id = ? WHERE client_id IN (?)', [
-        accountClientId,
-        clientIds,
-      ]),
-      db.query('UPDATE IGNORE votes SET client_id = ? WHERE client_id IN (?)', [
-        accountClientId,
-        clientIds,
-      ]),
+      this.claimContributions(accountClientId, clientIds),
       locales && updateLocales(accountClientId, locales),
     ]);
 
-    return UserClient.findAccount(sso_id);
+    return UserClient.findAccount(email);
   },
 
   async save({ client_id, email, age, gender }: any): Promise<boolean> {
     const [[row]] = await db.query(
-      'SELECT sso_id FROM user_clients WHERE client_id = ?',
+      'SELECT has_login FROM user_clients WHERE client_id = ?',
       [client_id]
     );
 
-    if (row && row.sso_id) return false;
+    if (row && row.has_login) return false;
 
     if (row) {
       await db.query(
@@ -223,35 +217,58 @@ const UserClient = {
     ]);
   },
 
-  async updateSSO(old_sso_id: string, new_sso_id: string, email: string) {
-    await db.query(
-      'UPDATE user_clients SET sso_id = ?, email = ? WHERE sso_id = ?',
-      [new_sso_id, email, old_sso_id]
+  async updateSSO(old_email: string, email: string): Promise<boolean> {
+    const [[row]] = await db.query(
+      'SELECT 1 FROM user_clients WHERE email = ? AND has_login',
+      [email]
     );
+
+    if (row) {
+      return false;
+    }
+
+    await db.query(
+      'UPDATE user_clients SET email = ? WHERE email = ? AND has_login',
+      [email, old_email]
+    );
+    return true;
   },
 
-  async updateAvatarURL(sso_id: string, url: string) {
-    await db.query('UPDATE user_clients SET avatar_url = ? WHERE sso_id = ?', [
+  async updateAvatarURL(email: string, url: string) {
+    await db.query('UPDATE user_clients SET avatar_url = ? WHERE email = ?', [
       url,
-      sso_id,
+      email,
     ]);
+  },
+
+  async findClientId(email: string): Promise<null | string> {
+    const [[row]] = await db.query(
+      'SELECT client_id FROM user_clients WHERE email = ? AND has_login',
+      [email]
+    );
+    return row ? row.client_id : null;
   },
 
   async hasSSO(client_id: string): Promise<boolean> {
     return Boolean(
       (await db.query(
-        'SELECT 1 FROM user_clients WHERE client_id = ? AND sso_id IS NOT NULL',
+        'SELECT 1 FROM user_clients WHERE client_id = ? AND has_login',
         [client_id]
       ))[0][0]
     );
   },
 
-  async findClientId(sso_id: string): Promise<null | string> {
-    const [[row]] = await db.query(
-      'SELECT client_id FROM user_clients WHERE sso_id = ?',
-      [sso_id]
-    );
-    return row ? row.client_id : null;
+  async claimContributions(to: string, from: string[]) {
+    await Promise.all([
+      db.query('UPDATE IGNORE clips SET client_id = ? WHERE client_id IN (?)', [
+        to,
+        from,
+      ]),
+      db.query('UPDATE IGNORE votes SET client_id = ? WHERE client_id IN (?)', [
+        to,
+        from,
+      ]),
+    ]);
   },
 };
 

@@ -5,8 +5,14 @@ import StateTree from '../../stores/tree';
 import { User } from '../../stores/user';
 import URLS from '../../urls';
 import { LocaleLink } from '../locale-helpers';
-import { DownIcon, LogoutIcon, ToggleIcon, UserIcon } from '../ui/icons';
-import { Hr } from '../ui/ui';
+import {
+  DashboardIcon,
+  DownIcon,
+  LogoutIcon,
+  CogIcon,
+  UserIcon,
+} from '../ui/icons';
+import { Avatar, Hr } from '../ui/ui';
 
 import './user-menu.css';
 
@@ -22,24 +28,16 @@ class UserMenu extends React.Component<PropsFromState> {
   hideMenu = () => this.setState({ showMenu: false });
 
   render() {
-    const { user: { account } } = this.props;
+    const {
+      user: { account },
+    } = this.props;
     return (
       <div
         className={'user-menu ' + (this.state.showMenu ? 'active' : '')}
         onMouseEnter={this.showMenu}
         onMouseLeave={this.hideMenu}>
         <button className="toggle" onClick={this.toggleMenu}>
-          <span className="avatar-wrap">
-            {account.avatar_url ? (
-              <img src={account.avatar_url} />
-            ) : (
-              <img
-                className="mars"
-                src="/img/mars-avatar.svg"
-                alt="Robot Avatar"
-              />
-            )}
-          </span>
+          <Avatar url={account.avatar_url} />
           <span className="name" title={account.username}>
             {account.username}
           </span>
@@ -52,14 +50,19 @@ class UserMenu extends React.Component<PropsFromState> {
             <ul>
               {[
                 {
+                  route: URLS.DASHBOARD,
+                  icon: <DashboardIcon />,
+                  id: 'dashboard',
+                },
+                {
                   route: URLS.PROFILE_INFO,
                   icon: <UserIcon />,
                   id: 'profile',
                 },
                 {
-                  route: URLS.PROFILE_PREFERENCES,
-                  icon: <ToggleIcon />,
-                  id: 'preferences',
+                  route: URLS.PROFILE_SETTINGS,
+                  icon: <CogIcon />,
+                  id: 'settings',
                 },
               ].map(({ route, icon, id }) => (
                 <li key={route}>

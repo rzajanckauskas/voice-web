@@ -3,7 +3,6 @@ import {
   Localized,
   withLocalization,
 } from 'fluent-react/compat';
-import pick = require('lodash.pick');
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { RouteComponentProps, withRouter } from 'react-router';
@@ -26,6 +25,9 @@ import {
 } from '../../../ui/ui';
 
 import './info.css';
+
+const pick = require('lodash.pick');
+const { Tooltip } = require('react-tippy');
 
 const Options = withLocalization(
   ({
@@ -52,7 +54,7 @@ interface PropsFromState {
 interface PropsFromDispatch {
   addNotification: typeof Notifications.actions.add;
   addUploads: typeof Uploads.actions.add;
-  refreshUser: typeof User.actions.refresh;
+  saveAccount: typeof User.actions.saveAccount;
 }
 
 interface Props
@@ -61,12 +63,14 @@ interface Props
     PropsFromDispatch,
     RouteComponentProps<any> {}
 
+type Locales = { locale: string; accent: string }[];
+
 interface State {
   username: string;
   visible: number | string;
   age: string;
   gender: string;
-  locales: { locale: string; accent: string }[];
+  locales: Locales;
   sendEmails: boolean;
 
   isSaving: boolean;
@@ -85,20 +89,27 @@ class ProfilePage extends React.Component<Props, State> {
       props.history.push('/');
     }
 
+    let locales: Locales = [];
+    if (!account) {
+      locales = userClients.reduce(
+        (locales, u) => locales.concat(u.locales || []),
+        []
+      );
+      locales = locales.filter(
+        (l1, i) => i == locales.findIndex(l2 => l2.locale == l1.locale)
+      );
+    }
+
     this.state = {
-      sendEmails: account ? Boolean(account.basket_token) : true,
+      sendEmails: account && Boolean(account.basket_token),
       visible: 0,
-      locales: [],
+      locales,
       ...pick(props.user, 'age', 'username', 'gender'),
       ...(account
         ? pick(account, 'age', 'username', 'gender', 'locales', 'visible')
         : {
             age: userClients.reduce((init, u) => u.age || init, ''),
             gender: userClients.reduce((init, u) => u.gender || init, ''),
-            locales: userClients.reduce(
-              (locales, u) => locales.concat(u.locales || []),
-              []
-            ),
           }),
 
       isSaving: false,
@@ -109,7 +120,7 @@ class ProfilePage extends React.Component<Props, State> {
   }
 
   toggleDemographicInfo = () => {
-    return this.setState({
+    this.setState({
       showDemographicInfo: !this.state.showDemographicInfo,
     });
   };
@@ -159,23 +170,24 @@ class ProfilePage extends React.Component<Props, State> {
       addUploads,
       api,
       getString,
-      refreshUser,
       user,
+      saveAccount,
     } = this.props;
     this.setState({ isSaving: true, isSubmitted: true }, () => {
       addUploads([
         async () => {
-          await Promise.all([
-            api.saveAccount({
-              ...pick(this.state, 'username', 'age', 'gender', 'locales'),
-              visible: JSON.parse(this.state.visible.toString()),
-              client_id: user.userId,
-            }),
+          if (
             !(user.account && user.account.basket_token) &&
-              this.state.sendEmails &&
-              api.subscribeToNewsletter(user.userClients[0].email),
-          ]);
-          refreshUser();
+            this.state.sendEmails
+          ) {
+            await api.subscribeToNewsletter(user.userClients[0].email);
+          }
+          saveAccount({
+            ...pick(this.state, 'username', 'age', 'gender'),
+            locales: this.state.locales.filter(l => l.locale),
+            visible: JSON.parse(this.state.visible.toString()),
+            client_id: user.userId,
+          });
           this.setState({ isSaving: false });
           addNotification(getString('profile-form-submit-saved'));
         },
@@ -184,7 +196,7 @@ class ProfilePage extends React.Component<Props, State> {
   };
 
   render() {
-    const { user } = this.props;
+    const { getString, user } = this.props;
     const {
       username,
       sendEmails,
@@ -291,8 +303,11 @@ class ProfilePage extends React.Component<Props, State> {
           ))}
         </div>
 
-        <Button outline onClick={this.addLocale}>
-          Add Language
+        <Button className="add-language" outline onClick={this.addLocale}>
+          <Localized id="add-language">
+            <span />
+          </Localized>
+          <span>+</span>
         </Button>
 
         <Hr />
@@ -300,9 +315,14 @@ class ProfilePage extends React.Component<Props, State> {
         {!(user.account && user.account.basket_token) && (
           <React.Fragment>
             <div className="signup-section">
-              <Localized id="email-input" attrs={{ label: true }}>
-                <LabeledInput value={user.userClients[0].email} disabled />
-              </Localized>
+              <Tooltip
+                arrow
+                html={getString('change-email-setings')}
+                theme="grey-tooltip">
+                <Localized id="email-input" attrs={{ label: true }}>
+                  <LabeledInput value={user.userClients[0].email} disabled />
+                </Localized>
+              </Tooltip>
 
               <div className="checkboxes">
                 <Localized id="keep-me-posted" attrs={{ label: true }}>
@@ -312,28 +332,25 @@ class ProfilePage extends React.Component<Props, State> {
                   />
                 </Localized>
 
-                {!user.account &&
-                  !isSubmitted && (
-                    <React.Fragment>
-                      <LabeledCheckbox
-                        label={
-                          <Localized
-                            id="accept-privacy"
-                            privacyLink={
-                              <LocaleLink to={URLS.PRIVACY} blank />
-                            }>
-                            <span />
-                          </Localized>
-                        }
-                        checked={privacyAgreed}
-                        onChange={this.handleChangeFor('privacyAgreed')}
-                      />
+                {!user.account && !isSubmitted && (
+                  <React.Fragment>
+                    <LabeledCheckbox
+                      label={
+                        <Localized
+                          id="accept-privacy"
+                          privacyLink={<LocaleLink to={URLS.PRIVACY} blank />}>
+                          <span />
+                        </Localized>
+                      }
+                      checked={privacyAgreed}
+                      onChange={this.handleChangeFor('privacyAgreed')}
+                    />
 
-                      <Localized id="read-terms-q">
-                        <LocaleLink to={URLS.TERMS} className="terms" blank />
-                      </Localized>
-                    </React.Fragment>
-                  )}
+                    <Localized id="read-terms-q">
+                      <LocaleLink to={URLS.TERMS} className="terms" blank />
+                    </Localized>
+                  </React.Fragment>
+                )}
               </div>
             </div>
 
@@ -362,6 +379,6 @@ export default connect<PropsFromState, PropsFromDispatch>(
   {
     addUploads: Uploads.actions.add,
     addNotification: Notifications.actions.add,
-    refreshUser: User.actions.refresh,
+    saveAccount: User.actions.saveAccount,
   }
 )(withLocalization(withRouter(ProfilePage)));

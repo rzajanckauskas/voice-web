@@ -10,8 +10,9 @@ import {
   BaseLanguage,
   InProgressLanguage,
   LaunchedLanguage,
-} from '../../../../../common/language-stats';
+} from 'common/language-stats';
 import { NATIVE_NAMES } from '../../../services/localization';
+import { trackLanguages } from '../../../services/tracker';
 import { Locale } from '../../../stores/locale';
 import StateTree from '../../../stores/tree';
 import RequestLanguageModal from '../../request-language-modal/request-language-modal';
@@ -121,12 +122,11 @@ class LanguagesPage extends React.PureComponent<Props, State> {
     }
 
     inProgress.sort(
-      presortLanguages(
-        (l1, l2) =>
-          l1.sentencesCount < l2.sentencesCount ||
-          l1.localizedPercentage < l2.localizedPercentage
-            ? 1
-            : -1
+      presortLanguages((l1, l2) =>
+        l1.sentencesCount < l2.sentencesCount ||
+        l1.localizedPercentage < l2.localizedPercentage
+          ? 1
+          : -1
       )
     );
     launched.sort(
@@ -141,11 +141,21 @@ class LanguagesPage extends React.PureComponent<Props, State> {
     });
   };
 
-  toggleShowAllInProgress = () =>
-    this.setState(state => ({ showAllInProgress: !state.showAllInProgress }));
+  toggleShowAllInProgress = () => {
+    this.setState(state => {
+      const showAllInProgress = !state.showAllInProgress;
+      trackLanguages(showAllInProgress ? 'see-more' : 'see-less');
+      return { showAllInProgress };
+    });
+  };
 
-  toggleShowAllLaunched = () =>
-    this.setState(state => ({ showAllLaunched: !state.showAllLaunched }));
+  toggleShowAllLaunched = () => {
+    this.setState(state => {
+      const showAllLaunched = !state.showAllLaunched;
+      trackLanguages(showAllLaunched ? 'see-more' : 'see-less');
+      return { showAllLaunched };
+    });
+  };
 
   toggleSearch = () =>
     this.setState(({ inProgress, launched }) => ({
@@ -163,6 +173,7 @@ class LanguagesPage extends React.PureComponent<Props, State> {
   };
 
   handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { getString } = this.props;
     const { inProgress, launched, selectedSection } = this.state;
     const query = event.target.value;
 
@@ -171,7 +182,10 @@ class LanguagesPage extends React.PureComponent<Props, State> {
         ? languages.filter(({ locale }: any) => {
             const q = query.toLowerCase();
             return (
-              locale.toLowerCase().includes(q) ||
+              locale.includes(q) ||
+              getString(locale)
+                .toLowerCase()
+                .includes(q) ||
               (NATIVE_NAMES[locale] || '').toLowerCase().includes(q)
             );
           })
@@ -187,7 +201,9 @@ class LanguagesPage extends React.PureComponent<Props, State> {
       selectedSection:
         filteredInProgress.length == 0
           ? 'launched'
-          : filteredLaunched.length == 0 ? 'in-progress' : selectedSection,
+          : filteredLaunched.length == 0
+          ? 'in-progress'
+          : selectedSection,
     });
   };
 
@@ -246,9 +262,10 @@ class LanguagesPage extends React.PureComponent<Props, State> {
                 <Button
                   outline
                   rounded
-                  onClick={() =>
-                    this.setState({ showLanguageRequestModal: true })
-                  }
+                  onClick={() => {
+                    trackLanguages('open-request-language-modal');
+                    this.setState({ showLanguageRequestModal: true });
+                  }}
                 />
               </Localized>
             </div>

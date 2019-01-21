@@ -17,6 +17,25 @@ function uniqueIcon(component: (id: number, props: any) => React.ReactNode) {
 
 export const ArrowLeft = Icon('/img/arrow-left.svg');
 
+export const BarChartIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24">
+    <defs>
+      <path
+        id="bar-a"
+        d="M21 0h-4c-.6 0-1 .4-1 1v18c0 .6.4 1 1 1h4c.6 0 1-.4 1-1V1c0-.6-.4-1-1-1zm-1 18h-2V2h2v16zM13 5H9c-.6 0-1 .4-1 1v13c0 .6.4 1 1 1h4c.6 0 1-.4 1-1V6c0-.6-.4-1-1-1zm-1 13h-2V7h2v11zm-7-8H1c-.6 0-1 .4-1 1v8c0 .6.4 1 1 1h4c.6 0 1-.4 1-1v-8c0-.6-.4-1-1-1zm-1 8H2v-6h2v6z"
+      />
+    </defs>
+    <g fill="none" fillRule="evenodd" transform="translate(1 2)">
+      <mask id="bar-b" fill="#fff">
+        <use xlinkHref="#bar-a" />
+      </mask>
+      <g fill="#4A4A4A" mask="url(#bar-b)">
+        <path d="M-1-2h24v24H-1z" />
+      </g>
+    </g>
+  </svg>
+);
+
 export const CameraIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24">
     <defs>
@@ -29,7 +48,6 @@ export const CameraIcon = () => (
       <mask id="camera-b" fill="#fff">
         <use xlinkHref="#camera-a" />
       </mask>
-      <use fill="#000" fillRule="nonzero" xlinkHref="#camera-a" />
       <g fill="#4A4A4A" mask="url(#camera-b)">
         <path d="M0 0h24v24H0z" />
       </g>
@@ -37,24 +55,24 @@ export const CameraIcon = () => (
   </svg>
 );
 
-export const CheckIcon = (props: any) => (
+export const CheckIcon = uniqueIcon((id, props) => (
   <svg width="24" height="24" viewBox="0 0 24 24" {...props}>
     <defs>
       <path
-        id="check-path"
+        id={'check-path' + id}
         d="M17.7 1.7l-11 11c-.2.2-.4.3-.7.3-.3 0-.5-.1-.7-.3l-5-5c-.4-.4-.4-1 0-1.4.4-.4 1-.4 1.4 0L6 10.6 16.3.3c.4-.4 1-.4 1.4 0 .4.4.4 1 0 1.4z"
       />
     </defs>
     <g fill="none" fillRule="evenodd" transform="translate(3 6)">
-      <mask id="check-mask" fill="#fff">
-        <use xlinkHref="#check-path" />
+      <mask id={'check-mask' + id} fill="#fff">
+        <use xlinkHref={'#check-path' + id} />
       </mask>
-      <g fill="#4A4A4A" mask="url(#check-mask)">
+      <g fill="#4A4A4A" mask={'url(#check-mask' + id + ')'}>
         <path d="M-3-6h24v24H-3z" />
       </g>
     </g>
   </svg>
-);
+));
 
 export const ChevronRight = (props: any) => (
   <svg width="24" height="24" viewBox="0 0 24 24">
@@ -80,6 +98,44 @@ export const CloseIcon = ({ black, ...props }: any) => {
   return <RealIcon {...props} />;
 };
 
+export const CloudIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24">
+    <defs>
+      <path
+        id="cloud-a"
+        d="M16.6 16.3c.396.4.396 1 0 1.4l-3.958 4c-.099.1-.198.2-.297.2-.099.1-.297.1-.396.1-.099 0-.297 0-.395-.1-.1-.1-.198-.1-.297-.2l-3.958-4a.974.974 0 0 1 0-1.4.95.95 0 0 1 1.385 0l2.276 2.3V12c0-.6.396-1 .99-1 .593 0 .989.4.989 1v6.6l2.276-2.3a.95.95 0 0 1 1.385 0zm6.135-5.8C21.647 9 19.865 8 17.887 8h-.495c-1.484-4.4-6.135-6.9-10.588-5.7-2.375.6-4.255 2-5.542 4.1C.075 8.5-.32 10.9.272 13.2c.397 1.4.99 2.7 1.98 3.7.396.4.99.5 1.385.1.396-.4.495-1 .1-1.4-.694-.8-1.287-1.8-1.485-2.9-.495-1.8-.198-3.7.791-5.3.99-1.6 2.474-2.8 4.256-3.2 3.66-1 7.52 1.3 8.41 5 .1.4.495.8.99.8h1.188c1.286 0 2.473.6 3.265 1.7.594.9.89 1.9.693 3-.198 1.1-.792 2-1.584 2.6-.494.3-.593.9-.197 1.4.197.3.494.4.791.4.198 0 .396-.1.594-.2 1.286-.9 2.177-2.3 2.474-3.9.297-1.6-.297-3.1-1.188-4.5z"
+      />
+    </defs>
+    <g fill="none" fillRule="evenodd">
+      <mask id="cloud-b" fill="#fff">
+        <use xlinkHref="#cloud-a" />
+      </mask>
+      <g fill="#4A4A4A" mask="url(#cloud-b)">
+        <path d="M0 0h24v24H0z" />
+      </g>
+    </g>
+  </svg>
+);
+
+export const CogIcon = uniqueIcon(id => (
+  <svg width="24" height="24" viewBox="0 0 24 24">
+    <defs>
+      <path
+        id={'cog-a' + id}
+        d="M12 8c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm8.3 1.4c.1-.2.3-.4.7-.4 1.7 0 3-1.3 3-3s-1.3-3-3-3h-.2c-.2 0-.4-.1-.5-.3 0-.1 0-.1-.1-.2-.1-.2-.1-.5.2-.8 1.2-1.2 1.2-3.1 0-4.2-.6-.6-1.3-.9-2.1-.9s-1.6.3-2.2.9c-.2.2-.5.2-.7.1-.2 0-.4-.3-.4-.6 0-1.7-1.3-3-3-3S9 1.3 9 3v.2c0 .2-.1.4-.3.5-.1 0-.1 0-.2.1-.2.1-.5 0-.8-.2-1.2-1.2-3.1-1.2-4.2 0-1.2 1.2-1.2 3.1.1 4.3.2.2.2.5.1.8-.1.2-.4.4-.7.4-1.7 0-3 1.3-3 3s1.3 3 3 3h.2c.3 0 .5.2.6.4.1.2.1.5-.2.8-.6.6-.9 1.3-.9 2.1s.3 1.5.9 2.1c1.2 1.2 3.1 1.2 4.3-.1.2-.2.5-.2.8-.1.3.1.4.3.4.7 0 1.7 1.3 3 3 3s3-1.3 3-3v-.2c0-.3.2-.5.4-.6.2-.1.5-.1.8.2 1.2 1.2 3.1 1.2 4.2 0 1.2-1.2 1.2-3.1-.1-4.3-.1-.2-.2-.5-.1-.7zm-1.8-.8c-.4 1-.2 2.1.6 3 .2.2.3.4.3.7 0 .3-.1.5-.3.7-.2.2-.4.3-.7.3-.3 0-.5-.1-.8-.4-.8-.8-1.9-1-2.9-.5-1 .4-1.6 1.4-1.6 2.4v.2c0 .6-.4 1-1 1s-1-.4-1-1v-.1c0-1.1-.7-2-1.7-2.4-.3-.2-.7-.2-1.1-.2-.7 0-1.4.3-1.9.8-.4.4-1 .4-1.4 0-.2-.2-.3-.4-.3-.7 0-.3.1-.5.4-.8.8-.8 1-1.9.5-2.9-.4-1-1.4-1.6-2.4-1.6H3c-.6 0-1-.4-1-1s.4-1 1-1h.1c1.1 0 2-.7 2.4-1.7.4-1 .2-2.1-.6-3-.4-.4-.4-1 0-1.4.4-.4 1-.4 1.5.1.7.7 1.8.9 2.7.6.1 0 .2 0 .3-.1 1-.4 1.6-1.4 1.6-2.4V3c0-.6.4-1 1-1s1 .4 1 1.1c0 1.1.6 2 1.6 2.4 1 .4 2.1.2 3-.6.2-.2.4-.3.7-.3.3 0 .5.1.7.3.4.4.4 1-.1 1.5-.7.7-.9 1.8-.6 2.7 0 .1 0 .2.1.3.4 1 1.4 1.6 2.4 1.6h.2c.6 0 1 .4 1 1s-.4 1-1.1 1c-1 0-2 .6-2.4 1.6z"
+      />
+    </defs>
+    <g fill="none" fillRule="evenodd">
+      <mask id={'cog-b' + id} fill="#fff">
+        <use xlinkHref={'#cog-a' + id} />
+      </mask>
+      <g fill="#4A4A4A" mask={`url(#cog-b${id})`}>
+        <path d="M0 0h24v24H0z" />
+      </g>
+    </g>
+  </svg>
+));
+
 export const ContactIcon = Icon('/img/contact.svg');
 
 export const CrossIcon = (props: any) => (
@@ -100,6 +156,25 @@ export const CrossIcon = (props: any) => (
     </g>
   </svg>
 );
+
+export const DashboardIcon = uniqueIcon(id => (
+  <svg width="24" height="24" viewBox="0 0 24 24">
+    <defs>
+      <path
+        id={'dash-a' + id}
+        d="M11.111 9.142c1.917.5 3.333 2.261 3.333 4.358 0 2.485-1.99 4.5-4.444 4.5-2.455 0-4.444-2.015-4.444-4.5 0-2.097 1.416-3.859 3.333-4.358V5.625c0-.621.497-1.125 1.111-1.125s1.111.504 1.111 1.125v3.517zM10 0c5.523 0 10 4.533 10 10.125 0 .621-.497 1.125-1.111 1.125a1.118 1.118 0 0 1-1.111-1.125c0-4.35-3.482-7.875-7.778-7.875-4.296 0-7.778 3.526-7.778 7.875 0 .621-.497 1.125-1.11 1.125A1.118 1.118 0 0 1 0 10.125C0 4.533 4.477 0 10 0zm0 11.25c-1.227 0-2.222 1.007-2.222 2.25s.995 2.25 2.222 2.25c1.227 0 2.222-1.007 2.222-2.25s-.995-2.25-2.222-2.25z"
+      />
+    </defs>
+    <g fill="none" fillRule="evenodd" transform="translate(2 3)">
+      <mask id={'dash-b' + id} fill="#fff">
+        <use xlinkHref={'#dash-a' + id} />
+      </mask>
+      <g fill="#4A4A4A" mask={`url(#dash-b${id})`}>
+        <path d="M-2-3h24v24H-2z" />
+      </g>
+    </g>
+  </svg>
+));
 
 export const DiscourseIcon = Icon('/img/discourse.svg');
 
@@ -132,6 +207,25 @@ export const DownloadIcon = (props: any) => (
 );
 
 export const GithubIcon = Icon('/img/github.svg');
+
+export const InfoIcon = uniqueIcon(id => (
+  <svg width="24" height="24" viewBox="0 0 24 24">
+    <defs>
+      <path
+        id={'info-a' + id}
+        d="M11 0C4.9 0 0 4.9 0 11s4.9 11 11 11 11-4.9 11-11S17.1 0 11 0zm0 20c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9zm1-9v4c0 .6-.4 1-1 1s-1-.4-1-1v-4c0-.6.4-1 1-1s1 .4 1 1zm-.3-4.7c.2.2.3.4.3.7 0 .3-.1.5-.3.7-.2.2-.4.3-.7.3h-.2c-.1 0-.1 0-.2-.1-.1 0-.1-.1-.2-.1s-.1-.1-.1-.1c-.2-.2-.3-.4-.3-.7 0-.3.1-.5.3-.7l.1-.1c.1 0 .1-.1.2-.1s.1 0 .2-.1c.3 0 .7.1.9.3z"
+      />
+    </defs>
+    <g fill="none" fillRule="evenodd" transform="translate(1 1)">
+      <mask id={'info-b' + id} fill="#fff">
+        <use xlinkHref={'#info-a' + id} />
+      </mask>
+      <g fill="#4A4A4A" mask={'url(#info-b' + id + ')'}>
+        <path d="M-1-1h24v24H-1z" />
+      </g>
+    </g>
+  </svg>
+));
 
 export const KeyboardIcon = Icon('/img/keyboard.svg');
 
@@ -226,6 +320,25 @@ export const OldRedoIcon = (props: any) => (
   </svg>
 );
 
+export const PenIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24">
+    <defs>
+      <path
+        id="pen-a"
+        d="M19.7 5.3l-5-5c-.4-.4-1-.4-1.4 0l-13 13c-.2.2-.3.4-.3.7v5c0 .6.4 1 1 1h5c.3 0 .5-.1.7-.3l13-13c.4-.4.4-1 0-1.4zM5.6 18H2v-3.6l12-12L17.6 6l-12 12z"
+      />
+    </defs>
+    <g fill="none" fillRule="evenodd" transform="translate(2 2)">
+      <mask id="pen-b" fill="#fff">
+        <use xlinkHref="#pen-a" />
+      </mask>
+      <g fill="#4A4A4A" mask="url(#pen-b)">
+        <path d="M-2-2h24v24H-2z" />
+      </g>
+    </g>
+  </svg>
+);
+
 export const PlayOutlineIcon = uniqueIcon(id => (
   <svg width="24" height="24" viewBox="0 0 24 24">
     <defs>
@@ -265,8 +378,6 @@ export const RedoIcon = uniqueIcon(id => (
     </g>
   </svg>
 ));
-
-export const RecordIcon = Icon('/img/record.svg', 'record');
 
 export const SearchIcon = Icon('/img/search.svg', 'search');
 
@@ -390,25 +501,24 @@ export const ThumbsUpIcon = (props: any) => (
   </svg>
 );
 
-export const ToggleIcon = uniqueIcon(id => (
+export const TrashIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24">
     <defs>
       <path
-        id={'toggle-a' + id}
-        d="M16 4H8c-4.4 0-8 3.6-8 8s3.6 8 8 8h8c4.4 0 8-3.6 8-8s-3.6-8-8-8zm0 14H8c-3.3 0-6-2.7-6-6s2.7-6 6-6h8c3.3 0 6 2.7 6 6s-2.7 6-6 6zM8 8c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"
+        id="trash-a"
+        d="M21 5h-4V4c0-1.7-1.3-3-3-3h-4C8.3 1 7 2.3 7 4v1H3c-.6 0-1 .4-1 1s.4 1 1 1h1v13c0 1.7 1.3 3 3 3h10c1.7 0 3-1.3 3-3V7h1c.6 0 1-.4 1-1s-.4-1-1-1zM9 4c0-.6.4-1 1-1h4c.6 0 1 .4 1 1v1H9V4zm9 16c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V7h12v13zm-7-9v6c0 .6-.4 1-1 1s-1-.4-1-1v-6c0-.6.4-1 1-1s1 .4 1 1zm4 0v6c0 .6-.4 1-1 1s-1-.4-1-1v-6c0-.6.4-1 1-1s1 .4 1 1z"
       />
     </defs>
     <g fill="none" fillRule="evenodd">
-      <mask id={'toggle-b' + id} fill="#fff">
-        <use xlinkHref={'#a' + id} />
+      <mask id="trash-b" fill="#fff">
+        <use xlinkHref="#trash-a" />
       </mask>
-      <use fill="#000" fillRule="nonzero" xlinkHref={'#toggle-a' + id} />
-      <g fill="#4A4A4A" mask={'url(#toggle-b' + id + ')'}>
+      <g fill="#4A4A4A" mask="url(#trash-b)">
         <path d="M0 0h24v24H0z" />
       </g>
     </g>
   </svg>
-));
+);
 
 export const VolumeIcon = (props: any) => (
   <svg width="24" height="24" viewBox="0 0 24 24">
@@ -441,7 +551,6 @@ export const UserIcon = uniqueIcon(id => (
       <mask id={'user-b' + id} fill="#fff">
         <use xlinkHref={'#user-a' + id} />
       </mask>
-      <use fill="#000" fillRule="nonzero" xlinkHref={'#user-a' + id} />
       <g fill="#4A4A4A" mask={'url(#user-b' + id + ')'}>
         <path d="M-3-2h24v24H-3z" />
       </g>
@@ -461,7 +570,6 @@ export const UserPlusIcon = uniqueIcon(id => (
       <mask id={'user-p-b' + id} fill="#fff">
         <use xlinkHref={'#user-p-a' + id} />
       </mask>
-      <use fill="#000" fillRule="nonzero" xlinkHref={'#user-p-a' + id} />
       <g fill="#4A4A4A" mask={'url(#user-p-b' + id + ')'}>
         <path d="M0 0h24v24H0z" />
       </g>

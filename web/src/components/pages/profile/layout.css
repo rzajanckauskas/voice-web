@@ -3,7 +3,15 @@
 .profile {
     &.info,
     &.avatar,
-    &.preferences {
+    &.goals,
+    &.settings,
+    &.delete {
+        & header {
+            @media (--lg-up) {
+                max-width: var(--wide-desktop-width);
+            }
+        }
+
         & #content {
             padding: 0;
             max-width: none;
@@ -35,9 +43,9 @@
         background: #f6f6f5;
 
         @media (--md-up) {
-            margin-right: 50px;
+            margin-inline-end: 50px;
             padding-top: 50px;
-            padding-right: 30px;
+            padding-inline-end: 30px;
             padding-bottom: 30px;
             width: 100%;
             max-width: 35%;
@@ -50,7 +58,7 @@
 
         @media (--lg-up) {
             max-width: 27%;
-            margin-right: 100px;
+            margin-inline-end: 100px;
         }
 
         & .links {
@@ -66,11 +74,18 @@
 
             @media (--md-up) {
                 flex-direction: column;
+                margin: 0 auto;
+                width: 100%;
+                max-width: var(--wide-desktop-width);
+                position: absolute;
+                left: 0;
+                right: 0;
             }
 
             & a {
                 border-radius: 40px;
                 padding: 18px 40px;
+                max-width: 200px;
 
                 display: flex;
 
@@ -103,36 +118,35 @@
                 }
 
                 & .text {
-                    margin-left: 15px;
+                    margin-inline-start: 15px;
 
                     @media (--sm-down) {
                         display: none;
                     }
                 }
             }
-        }
 
-        & .buttons {
-            display: none;
-
-            @media (--md-up) {
-                display: block;
+            & .button {
+                width: fit-content;
             }
         }
     }
 
     & .content {
         box-sizing: border-box;
-        max-width: 785px;
+        max-width: 905px;
         width: 100%;
         min-height: 500px;
+        position: relative;
+        z-index: var(--middle-z-index);
+        overflow: auto;
 
         @media (--sm-down) {
             padding: 20px 20px 0;
         }
 
         @media (--md-up) {
-            margin-right: 20px;
+            margin-inline-end: 20px;
             padding-top: 50px;
         }
     }

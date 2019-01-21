@@ -1,10 +1,10 @@
 @import url('../vars.css');
 
 .user-menu {
-    margin-left: 20px;
+    margin: 0 20px;
 
     @media (--sm-up) {
-        width: 200px;
+        max-width: 200px;
     }
 
     & .toggle {
@@ -18,8 +18,12 @@
 
         background: transparent;
 
+        & .avatar-wrap {
+            margin-inline-end: 10px;
+        }
+
         & .name {
-            margin-right: 10px;
+            margin-inline-end: 10px;
             max-width: 100%;
             font-family: var(--base-font-family);
             font-weight: 600;
@@ -36,29 +40,9 @@
         }
 
         & svg {
-            margin-left: auto;
-            margin-right: 11px;
+            margin-inline-start: auto;
+            margin-inline-end: 11px;
             transition: transform var(--easing) var(--transition-duration);
-        }
-    }
-
-    & .avatar-wrap {
-        flex-shrink: 0;
-        border-radius: 100%;
-        margin-right: 10px;
-        width: 24px;
-        height: 24px;
-        overflow: hidden;
-        background: #f89096;
-
-        & > img {
-            object-fit: cover;
-            height: 100%;
-            width: 100%;
-        }
-
-        & .mars {
-            object-fit: contain;
         }
     }
 
@@ -69,24 +53,17 @@
     & .menu {
         position: absolute;
         top: 0;
+        right: 0;
         box-sizing: border-box;
         flex-direction: column;
         display: none;
-
-        @media (--xs-down) {
-            right: 0;
-        }
-
-        @media (--sm-up) {
-            width: 100%;
-        }
 
         & .triangle {
             border-left: 8px solid transparent;
             border-right: 8px solid transparent;
             border-bottom: 10px solid var(--white);
-            margin-left: auto;
-            margin-right: 10px;
+            margin-inline-start: auto;
+            margin-inline-end: 10px;
             padding-top: 15px;
             display: inline-block;
         }
@@ -114,7 +91,7 @@
             align-items: center;
 
             & svg {
-                margin-right: 12px;
+                margin-inline-end: 12px;
                 height: 16px;
             }
         }

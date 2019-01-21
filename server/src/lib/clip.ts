@@ -2,11 +2,11 @@ import * as crypto from 'crypto';
 import { PassThrough } from 'stream';
 import { S3 } from 'aws-sdk';
 import { NextFunction, Request, Response } from 'express';
-
 const PromiseRouter = require('express-promise-router');
 import { getConfig } from '../config-helper';
 import { AWS } from './aws';
 import Model from './model';
+import getLeaderboard from './model/leaderboard';
 import Bucket from './bucket';
 import { ClientParameterError } from './utility';
 
@@ -61,6 +61,8 @@ export default class Clip {
     router.get('/validated_hours', this.serveValidatedHoursCount);
     router.get('/daily_count', this.serveDailyCount);
     router.get('/stats', this.serveClipsStats);
+    router.get('/leaderboard', this.serveClipLeaderboard);
+    router.get('/votes/leaderboard', this.serveVoteLeaderboard);
     router.get('/voices', this.serveVoicesStats);
     router.get('/votes/daily_count', this.serveDailyVotesCount);
     router.get('*', this.serveRandomClips);
@@ -179,10 +181,6 @@ export default class Clip {
     { client_id, params, query }: Request,
     response: Response
   ): Promise<void> => {
-    if (!client_id) {
-      throw new ClientParameterError();
-    }
-
     const clips = await this.bucket.getRandomClips(
       client_id,
       params.locale,
@@ -195,25 +193,51 @@ export default class Clip {
     response.json(await this.model.getValidatedHours());
   };
 
-  private serveDailyCount = async (request: Request, response: Response) => {
-    response.json(await this.model.db.getDailyClipsCount());
+  serveDailyCount = async (request: Request, response: Response) => {
+    response.json(
+      await this.model.db.getDailyClipsCount(request.params.locale)
+    );
   };
 
-  private serveDailyVotesCount = async (
-    request: Request,
-    response: Response
-  ) => {
-    response.json(await this.model.db.getDailyVotesCount());
+  serveDailyVotesCount = async (request: Request, response: Response) => {
+    response.json(
+      await this.model.db.getDailyVotesCount(request.params.locale)
+    );
   };
 
-  private serveClipsStats = async ({ params }: Request, response: Response) => {
+  serveClipsStats = async ({ params }: Request, response: Response) => {
     response.json(await this.model.getClipsStats(params.locale));
   };
 
-  private serveVoicesStats = async (
-    { params }: Request,
+  serveVoicesStats = async ({ params }: Request, response: Response) => {
+    response.json(await this.model.getVoicesStats(params.locale));
+  };
+
+  serveClipLeaderboard = async (
+    { client_id, params, query }: Request,
     response: Response
   ) => {
-    response.json(await this.model.getVoicesStats(params.locale));
+    response.json(
+      await getLeaderboard({
+        type: 'clip',
+        client_id,
+        cursor: query.cursor ? JSON.parse(query.cursor) : null,
+        locale: params.locale,
+      })
+    );
+  };
+
+  serveVoteLeaderboard = async (
+    { client_id, params, query }: Request,
+    response: Response
+  ) => {
+    response.json(
+      await getLeaderboard({
+        type: 'vote',
+        client_id,
+        cursor: query.cursor ? JSON.parse(query.cursor) : null,
+        locale: params.locale,
+      })
+    );
   };
 }

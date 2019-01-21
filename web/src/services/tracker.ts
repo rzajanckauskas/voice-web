@@ -6,12 +6,14 @@ function track(
   category:
     | 'Home'
     | 'Home-New'
-    | 'Navigation'
     | 'Recording'
     | 'Listening'
     | 'Profile'
+    | 'Languages'
     | 'Data'
-    | 'Sharing',
+    | 'Sharing'
+    | 'Dashboard'
+    | 'Global',
   action: string,
   locale?: string
 ) {
@@ -20,16 +22,24 @@ function track(
   }
 }
 
-export function trackHome(
-  action: 'speak' | 'listen' | 'read-more',
-  locale: string
+export function trackGlobal(
+  action: 'change-language' | 'github' | 'discourse' | 'contact',
+  locale?: string
 ) {
-  track('Home', action, locale);
+  track('Global', action, locale);
 }
 
-export function trackHomeNew(
-  action: 'speak' | 'listen' | 'read-more' | 'metric-locale-change',
-  locale: string
+export function trackHome(
+  action:
+    | 'speak'
+    | 'listen'
+    | 'read-more'
+    | 'metric-locale-change'
+    | 'change-benefits-tabs'
+    | 'click-whats-public-item'
+    | 'click-benefits-item'
+    | 'click-benefits-register',
+  locale?: string
 ) {
   track('Home-New', action, locale);
 }
@@ -69,8 +79,20 @@ export function trackProfile(
     | 'give-accent'
     | 'give-age'
     | 'give-gender'
+    | 'give-avatar'
 ) {
   track('Profile', action);
+}
+
+export function trackLanguages(
+  action:
+    | 'open-request-language-modal'
+    | 'contribute'
+    | 'see-more'
+    | 'see-less',
+  locale?: string
+) {
+  track('Languages', action, locale);
 }
 
 export function trackDataset(
@@ -84,10 +106,16 @@ export function trackDataset(
   track('Data', action);
 }
 
-export function trackNavigation(action: 'progress-to-record') {
-  track('Navigation', action);
-}
-
 export function trackSharing(channel: 'facebook' | 'twitter' | 'link') {
   track('Sharing', channel);
+}
+
+export function trackDashboard(
+  action:
+    | 'speak-cta'
+    | 'listen-cta'
+    | 'change-language'
+    | 'leaderboard-load-more'
+) {
+  track('Dashboard', action);
 }

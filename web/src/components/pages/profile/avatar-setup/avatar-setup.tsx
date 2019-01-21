@@ -6,6 +6,7 @@ import {
 import * as React from 'react';
 import { connect } from 'react-redux';
 import API from '../../../../services/api';
+import { trackProfile } from '../../../../services/tracker';
 import { Notifications } from '../../../../stores/notifications';
 import StateTree from '../../../../stores/tree';
 import { User } from '../../../../stores/user';
@@ -83,6 +84,19 @@ interface Props extends LocalizationProps, PropsFromState, PropsFromDispatch {}
 class AvatarSetup extends React.Component<Props> {
   state = { isSaving: false };
 
+  async saveFileAvatar(files: FileList) {
+    const { addNotification, api, getString, refreshUser } = this.props;
+    this.setState({ isSaving: true });
+    const image = await resizeImage(files.item(0), 80);
+    const { error } = await api.saveAvatar('file', image);
+    if (['too_large'].includes(error)) {
+      addNotification(getString('file' + error));
+    }
+    trackProfile('give-avatar');
+    refreshUser();
+    this.setState({ isSaving: false });
+  }
+
   render() {
     const {
       addNotification,
@@ -98,8 +112,22 @@ class AvatarSetup extends React.Component<Props> {
         : null;
     return (
       <fieldset className="avatar-setup" disabled={this.state.isSaving}>
+        <Localized id="add-avatar-title">
+          <h2 />
+        </Localized>
+
         <div className="file-upload">
-          <label>
+          <label
+            onDragOver={event => {
+              event.preventDefault();
+            }}
+            onDrop={event => {
+              this.saveFileAvatar(event.dataTransfer.files);
+              event.preventDefault();
+            }}>
+            <Localized id="browse-file-title">
+              <span className="title" />
+            </Localized>
             <Localized
               id="browse-file"
               browseWrap={<span className="browse" />}>
@@ -108,15 +136,8 @@ class AvatarSetup extends React.Component<Props> {
             <input
               type="file"
               accept="image/*"
-              onChange={async event => {
-                this.setState({ isSaving: true });
-                const image = await resizeImage(event.target.files.item(0), 24);
-                const { error } = await api.saveAvatar('file', image);
-                if (['too_large'].includes(error)) {
-                  addNotification(getString('file' + error));
-                }
-                refreshUser();
-                this.setState({ isSaving: false });
+              onChange={event => {
+                this.saveFileAvatar(event.target.files);
               }}
             />
           </label>

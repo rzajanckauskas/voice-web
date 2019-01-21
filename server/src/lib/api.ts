@@ -4,6 +4,7 @@ import { NextFunction, Request, Response, Router } from 'express';
 import * as sendRequest from 'request-promise-native';
 import { UserClient as UserClientType } from 'common/user-clients';
 import { getConfig } from '../config-helper';
+import getGoals from './model/goals';
 import UserClient from './model/user-client';
 import Model from './model';
 import Clip from './clip';
@@ -33,21 +34,19 @@ export default class API {
       async (request: Request, response: Response, next: NextFunction) => {
         this.metrics.countRequest(request);
 
-        const client_id =
-          (request.headers.client_id as string) ||
-          // TODO: Remove next line after the headers.client_id has been up for
-          // a while (to stay compatible to old client)
-          (request.headers.uid as string);
+        const client_id = request.headers.client_id as string;
         if (client_id) {
           if (await UserClient.hasSSO(client_id)) {
             response.sendStatus(401);
             return;
+          } else {
+            await this.model.db.saveUserClient(client_id);
           }
           request.client_id = client_id;
-        }
-
-        if (request.user) {
-          request.client_id = await UserClient.findClientId(request.user.id);
+        } else if (request.user) {
+          request.client_id = await UserClient.findClientId(
+            request.user.emails[0].value
+          );
         }
 
         next();
@@ -69,8 +68,8 @@ export default class API {
       next();
     });
 
-    router.put('/user_clients/:id', this.saveUserClient);
     router.get('/user_clients', this.getUserClients);
+    router.post('/user_clients/:client_id/claim', this.claimUserClient);
     router.get('/user_client', this.getAccount);
     router.patch('/user_client', this.saveAccount);
     router.post(
@@ -78,7 +77,9 @@ export default class API {
       bodyParser.raw({ type: 'image/*' }),
       this.saveAvatar
     );
-    router.put('/users/:id', this.saveUser);
+
+    router.get('/user_client/goals', this.getGoals);
+    router.get('/user_client/:locale/goals', this.getGoals);
 
     router.get('/:locale/sentences', this.getRandomSentences);
     router.post('/skipped_sentences/:id', this.createSkippedSentence);
@@ -91,6 +92,9 @@ export default class API {
       },
       this.clip.getRouter()
     );
+
+    router.get('/contribution_activity', this.getContributionActivity);
+    router.get('/:locale/contribution_activity', this.getContributionActivity);
 
     router.get('/requested_languages', this.getRequestedLanguages);
     router.post('/requested_languages', this.createLanguageRequest);
@@ -106,44 +110,8 @@ export default class API {
     return router;
   }
 
-  saveUserClient = async (
-    { client_id, body, params }: Request,
-    response: Response
-  ) => {
-    const demographic = body;
-
-    if (!client_id || !demographic) {
-      throw new ClientParameterError();
-    }
-
-    // Where is the clip demographic going to be located?
-    const demographicFile = client_id + '/demographic.json';
-
-    await this.model.db.updateUser(client_id, demographic);
-
-    await AWS.getS3()
-      .putObject({
-        Bucket: getConfig().BUCKET_NAME,
-        Key: demographicFile,
-        Body: JSON.stringify(demographic),
-      })
-      .promise();
-
-    console.log('clip demographic written to s3', demographicFile);
-    response.json(client_id);
-  };
-
-  saveUser = async (request: Request, response: Response) => {
-    await this.model.syncUser(
-      request.params.id,
-      request.body,
-      request.header('Referer')
-    );
-    response.json('user synced');
-  };
-
   getRandomSentences = async (request: Request, response: Response) => {
-    const { client_id, headers, params } = request;
+    const { client_id, params } = request;
     const sentences = await this.model.findEligibleSentences(
       client_id,
       params.locale,
@@ -199,16 +167,13 @@ export default class API {
     if (!user) {
       throw new ClientParameterError();
     }
-    response.json(
-      await UserClient.saveAccount(user.id, {
-        ...body,
-        email: user.emails[0].value,
-      })
-    );
+    response.json(await UserClient.saveAccount(user.emails[0].value, body));
   };
 
   getAccount = async ({ user }: Request, response: Response) => {
-    response.json(user ? await UserClient.findAccount(user.id) : null);
+    response.json(
+      user ? await UserClient.findAccount(user.emails[0].value) : null
+    );
   };
 
   subscribeToNewsletter = async (request: Request, response: Response) => {
@@ -268,7 +233,8 @@ export default class API {
           headers['content-type'] +
           ';base64,' +
           body.toString('base64');
-        if (avatarURL.length > 2500) {
+        console.log(avatarURL.length);
+        if (avatarURL.length > 8000) {
           error = 'too_large';
         }
         break;
@@ -279,9 +245,37 @@ export default class API {
     }
 
     if (!error) {
-      await UserClient.updateAvatarURL(user.id, avatarURL);
+      await UserClient.updateAvatarURL(user.emails[0].value, avatarURL);
     }
 
     response.json(error ? { error } : {});
+  };
+
+  getContributionActivity = async (
+    { client_id, params: { locale }, query }: Request,
+    response: Response
+  ) => {
+    response.json(
+      await (query.from == 'you'
+        ? this.model.db.getContributionStats(locale, client_id)
+        : this.model.getContributionStats(locale))
+    );
+  };
+
+  getGoals = async (
+    { client_id, params: { locale } }: Request,
+    response: Response
+  ) => {
+    response.json(await getGoals(client_id, locale));
+  };
+
+  claimUserClient = async (
+    { client_id, params }: Request,
+    response: Response
+  ) => {
+    if (!(await UserClient.hasSSO(params.client_id)) && client_id) {
+      await UserClient.claimContributions(client_id, [params.client_id]);
+    }
+    response.json({});
   };
 }
