@@ -26,8 +26,16 @@ services:
     networks:
       - voice-web
     ports:
-      - 9000:9000
+      - 8000:9000
     command: bash -c "/code/docker/prepare_s3.sh && yarn && yarn start"
-
+  # database manager
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8888:8080
+    networks:
+      - voice-web
+    container_name: adminer
 networks:
   voice-web:
