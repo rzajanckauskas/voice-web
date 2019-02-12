@@ -33,7 +33,7 @@
     "lint": "eslint **/*.ts **/*.tsx",
     "prettier": "yarn lint --fix",
     "start": "concurrently -p \"[{name}]\" -n \"BE,FE\" -c \"bgBlue.bold,bgMagenta.bold\" \"cd server && yarn start\" \"cd web && yarn dev\"",
-    "start:prod": "node server/js/server.js",
+    "start:prod": "node --inspect=0.0.0.0 server/js/server.js",
     "test": "concurrently --kill-others-on-fail \"cd web && yarn test\" \"cd server && yarn test\""
   },
   "husky": {

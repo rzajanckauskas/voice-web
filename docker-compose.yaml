@@ -9,12 +9,6 @@ services:
       - MYSQL_USER=voicecommons
       - MYSQL_PASSWORD=voicecommons
       - MYSQL_ROOT_PASSWORD=voicewebroot
-  s3proxy:
-    image: andrewgaul/s3proxy
-    networks:
-      - voice-web
-    environment:
-      - S3PROXY_AUTHORIZATION=none
   web:
     build:
       context: .
@@ -27,15 +21,16 @@ services:
       - voice-web
     ports:
       - 9000:9000
+      - 9229:9229
     command: bash -c "/code/docker/prepare_s3.sh && yarn && yarn start"
   # database manager
   adminer:
     image: adminer
     restart: always
     ports:
-    - 8080:8080
+      - 8080:8080
     networks:
-    - voice-web
+      - voice-web
     container_name: adminer
 networks:
   voice-web:
