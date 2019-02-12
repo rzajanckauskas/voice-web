@@ -17,16 +17,15 @@ import { isContributable } from '../locale-helpers';
 
 interface EditableUser {
   email: string;
-  username: string;
   accents?: any;
   age: string;
   gender: string;
   sendEmails: boolean;
+  password: string;
 }
 
 const userFormFields = [
   'email',
-  'username',
   'password',
   'age',
   'accent',
@@ -114,7 +113,7 @@ class ProfileForm extends React.Component<Props, State> {
 
   render() {
     const { getString, hasEnteredInfo, locale, onExit, user } = this.props;
-    const { email, username, accent, age, gender, sendEmails } = this.state;
+    const { email, accent, age, gender, sendEmails, password } = this.state;
 
     const shownLocale = isContributable(locale) ? locale : DEFAULT_LOCALE;
 
@@ -166,14 +165,14 @@ class ProfileForm extends React.Component<Props, State> {
             />
           </Localized>
 
-          <Localized id="profile-form-username" attrs={{ label: true }}>
+          <Localized id="profile-form-password" attrs={{ label: true }}>
             <LabeledInput
               className="half-width"
-              label="User Name"
-              name="username"
+              label="Password"
+              name="password"
               onChange={this.update}
               type="text"
-              value={username}
+              value={password}
             />
           </Localized>
 
