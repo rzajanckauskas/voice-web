@@ -1,7 +1,7 @@
 import { Localized } from 'fluent-react/compat';
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { RouteComponentProps, withRouter } from 'react-router';
+import { Route, RouteComponentProps, withRouter } from 'react-router';
 import { LOCALES, NATIVE_NAMES } from '../../services/localization';
 import { trackGlobal } from '../../services/tracker';
 import StateTree from '../../stores/tree';
@@ -30,6 +30,7 @@ import LocalizationSelect from './localization-select';
 import Logo from './logo';
 import Nav from './nav';
 import UserMenu from './user-menu';
+import Login from './login';
 
 const LOCALES_WITH_NAMES = LOCALES.map(code => [
   code,
@@ -200,13 +201,7 @@ class Layout extends React.PureComponent<LayoutProps, LayoutState> {
           </div>
           <div>
             {this.renderTallies()}
-            {user.account ? (
-              <UserMenu />
-            ) : isBuildingProfile ? null : (
-              <Localized id="login-signup">
-                <LinkButton className="login" href="/login" rounded outline />
-              </Localized>
-            )}
+            {user.account ? <UserMenu /> : isBuildingProfile ? null : <Login />}
             {LOCALES.length > 1 && (
               <LocalizationSelect
                 locale={locale}
@@ -281,9 +276,7 @@ class Layout extends React.PureComponent<LayoutProps, LayoutState> {
                       <LinkButton rounded href="/logout" />
                     </Localized>
                   ) : (
-                    <Localized id="login-signup">
-                      <LinkButton rounded href="/login" />
-                    </Localized>
+                    <Login />
                   )}
                 </React.Fragment>
               )}

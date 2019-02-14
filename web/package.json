@@ -53,7 +53,8 @@
     "style-loader": "^0.23.1",
     "typescript": "3.1.6",
     "webpack": "^4.28.4",
-    "webpack-cli": "^3.2.1"
+    "webpack-cli": "^3.2.1",
+    "react-bootstrap": "latest"
   },
   "devDependencies": {
     "bundlesize": "^0.17.1",

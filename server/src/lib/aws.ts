@@ -11,7 +11,7 @@ if (process.env.HTTP_PROXY) {
 }
 
 export namespace AWS {
-  let s3 = new S3(getConfig().S3_CONFIG);
+  let s3: any = null;
 
   export function getS3() {
     return s3;

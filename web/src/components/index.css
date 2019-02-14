@@ -11,6 +11,7 @@
 @import url('pages/languages/get-involved-modal.css');
 @import url('progress-bar/progress-bar.css');
 @import url('request-language-modal/request-language-modal.css');
+@import 'login_register.css';
 
 /* Define our icon font. */
 @font-face {

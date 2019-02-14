@@ -9,7 +9,6 @@ import UserClient from './model/user-client';
 import Model from './model';
 import Clip from './clip';
 import Prometheus from './prometheus';
-import { AWS } from './aws';
 import { ClientParameterError } from './utility';
 
 const PromiseRouter = require('express-promise-router');
@@ -36,7 +35,7 @@ export default class API {
 
         const client_id = request.headers.client_id as string;
         if (client_id) {
-          if (await UserClient.hasSSO(client_id)) {
+          if (await UserClient.hasAccount(client_id)) {
             response.sendStatus(401);
             return;
           } else {
@@ -273,7 +272,7 @@ export default class API {
     { client_id, params }: Request,
     response: Response
   ) => {
-    if (!(await UserClient.hasSSO(params.client_id)) && client_id) {
+    if (!(await UserClient.hasAccount(params.client_id)) && client_id) {
       await UserClient.claimContributions(client_id, [params.client_id]);
     }
     response.json({});

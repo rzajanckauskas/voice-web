@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import { S3 } from 'aws-sdk';
 
 export type CommonVoiceConfig = {
   VERSION: string;
@@ -17,13 +16,7 @@ export type CommonVoiceConfig = {
   ENVIRONMENT: string;
   RELEASE_VERSION?: string;
   SECRET: string;
-  S3_CONFIG: S3.Types.ClientConfiguration;
   ADMIN_EMAILS: string;
-  AUTH0: {
-    DOMAIN: string;
-    CLIENT_ID: string;
-    CLIENT_SECRET: string;
-  };
   BASKET_API_KEY?: string;
   IMPORT_SENTENCES: boolean;
 };
@@ -45,15 +38,6 @@ const DEFAULTS: CommonVoiceConfig = {
   ENVIRONMENT: 'default',
   SECRET: 'TODO: Set a secure SECRET in config.json',
   ADMIN_EMAILS: '[]', // array of admin emails, as JSON
-  S3_CONFIG: {
-    signatureVersion: 'v4',
-    useDualstack: true,
-  },
-  AUTH0: {
-    DOMAIN: '',
-    CLIENT_ID: '',
-    CLIENT_SECRET: '',
-  },
   IMPORT_SENTENCES: true,
 };
 

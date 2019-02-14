@@ -2,6 +2,11 @@ import pick = require('lodash.pick');
 import { UserClient } from 'common/user-clients';
 import { getLocaleId } from './db';
 import { getMySQLInstance } from './db/mysql';
+import { getConfig } from '../../config-helper';
+
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+const { SECRET } = getConfig();
 
 const db = getMySQLInstance();
 
@@ -117,7 +122,7 @@ const UserClient = {
               'age',
               'email',
               'gender',
-              'username',
+              'password',
               'basket_token',
               'skip_submission_feedback',
               'visible',
@@ -217,7 +222,7 @@ const UserClient = {
     ]);
   },
 
-  async updateSSO(old_email: string, email: string): Promise<boolean> {
+  async updateUserEmail(old_email: string, email: string): Promise<boolean> {
     const [[row]] = await db.query(
       'SELECT 1 FROM user_clients WHERE email = ? AND has_login',
       [email]
@@ -249,7 +254,7 @@ const UserClient = {
     return row ? row.client_id : null;
   },
 
-  async hasSSO(client_id: string): Promise<boolean> {
+  async hasAccount(client_id: string): Promise<boolean> {
     return Boolean(
       (await db.query(
         'SELECT 1 FROM user_clients WHERE client_id = ? AND has_login',
@@ -269,6 +274,43 @@ const UserClient = {
         from,
       ]),
     ]);
+  },
+
+  setPassword(password: string) {
+    this.salt = crypto.randomBytes(16).toString('hex');
+    this.hash = crypto
+      .pbkdf2Sync(password, this.salt, 10000, 512, 'sha512')
+      .toString('hex');
+  },
+
+  validatePassword(user: UserClient, password: string): boolean {
+    const hash = crypto
+      .pbkdf2Sync(password, user.salt, 10000, 512, 'sha512')
+      .toString('hex');
+    return user.hash === hash;
+  },
+
+  generateJWT() {
+    const today = new Date();
+    const expirationDate = new Date(today);
+    expirationDate.setDate(today.getDate() + 60);
+
+    return jwt.sign(
+      {
+        email: this.email,
+        id: this.client_id,
+        exp: expirationDate.getTime() / 1000,
+      },
+      SECRET
+    );
+  },
+
+  toAuthJSON() {
+    return {
+      _id: this.client_id,
+      email: this.email,
+      token: this.generateJWT(),
+    };
   },
 };
 

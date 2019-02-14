@@ -38,8 +38,8 @@ class UserMenu extends React.Component<PropsFromState> {
         onMouseLeave={this.hideMenu}>
         <button className="toggle" onClick={this.toggleMenu}>
           <Avatar url={account.avatar_url} />
-          <span className="name" title={account.username}>
-            {account.username}
+          <span className="name" title={account.email}>
+            {account.email}
           </span>
           <DownIcon />
         </button>

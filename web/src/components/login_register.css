@@ -1,0 +1,23 @@
+@media all and (min-width: 480px) {
+    .login-popup {
+        position: absolute;
+        z-index: 9999;
+        width: 500px;
+        height: 200px;
+        border: 1px solid gray;
+        top: 100px;
+        left: 20%;
+        background-color: white;
+        padding: 0;
+    }
+
+    .login-popup .popup-close {
+        position: relative;
+        float: right;
+    }
+
+    .login-popup form {
+        max-width: 320px;
+        margin: 60px auto;
+    }
+}

@@ -1,6 +1,7 @@
 export type UserClient = {
   email?: string;
-  username?: string;
+  hash?: string;
+  salt?: string;
   client_id?: string;
   age?: string;
   gender?: string;
