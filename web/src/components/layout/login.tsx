@@ -30,6 +30,22 @@ export default class Login extends React.PureComponent<any, any> {
     console.log(this.state);
   };
 
+  handleSubmit = (event: any) => {
+    event.preventDefault();
+
+    fetch(this.getFormUrl(), {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: this.state.email,
+        password: this.state.password,
+      }),
+    });
+  };
+
   render() {
     const { email, password, showLoginPopup, showRegisterPopup } = this.state;
 
@@ -78,7 +94,10 @@ export default class Login extends React.PureComponent<any, any> {
               </button>
             )}
             <h1> Account {showRegisterPopup ? 'registration' : 'login'}</h1>
-            <form action={this.getFormUrl()} method={'post'}>
+            <form
+              action={this.getFormUrl()}
+              method={'post'}
+              onSubmit={this.handleSubmit}>
               <Form.Group controlId="email">
                 <Form.Label>Email</Form.Label>
                 <Form.Control
