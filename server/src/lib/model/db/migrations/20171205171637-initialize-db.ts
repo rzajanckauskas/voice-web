@@ -40,7 +40,7 @@ export const up = async function(db: any): Promise<any> {
         UNIQUE KEY path_index (path),
         KEY original_sentence_id (original_sentence_id),
         CONSTRAINT clips_ibfk_1 FOREIGN KEY (original_sentence_id) REFERENCES sentences (id),
-        CONSTRAINT clips_ibfk_2 FOREIGN KEY (client_id) REFERENCES user_clients (client_id)
+        CONSTRAINT clips_ibfk_2 FOREIGN KEY (client_id) REFERENCES user_clients (client_id) ON DELETE CASCADE
       );
       
       CREATE TABLE votes (
@@ -51,7 +51,7 @@ export const up = async function(db: any): Promise<any> {
         UNIQUE KEY clip_client_index (clip_id,client_id),
         KEY client_id (client_id),
         CONSTRAINT votes_ibfk_1 FOREIGN KEY (clip_id) REFERENCES clips (id),
-        CONSTRAINT votes_ibfk_2 FOREIGN KEY (client_id) REFERENCES user_clients (client_id)
+        CONSTRAINT votes_ibfk_2 FOREIGN KEY (client_id) REFERENCES user_clients (client_id) ON DELETE CASCADE
       );
     `
   );

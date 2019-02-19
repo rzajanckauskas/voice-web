@@ -7,7 +7,7 @@ export const up = async function(db: any): Promise<any> {
         locale_id SMALLINT(5) UNSIGNED NOT NULL,
         accent VARCHAR(255) NOT NULL,
         UNIQUE KEY client_locale (client_id, locale_id),
-        FOREIGN KEY (client_id) REFERENCES user_clients (client_id),
+        FOREIGN KEY (client_id) REFERENCES user_clients (client_id) ON DELETE CASCADE,
         FOREIGN KEY (locale_id) REFERENCES locales (id)
       );
     `

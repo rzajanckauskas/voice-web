@@ -3,8 +3,14 @@ import { Button, Form } from 'react-bootstrap';
 import { LinkButton } from '../ui/ui';
 import { Localized } from 'fluent-react/compat';
 
-export default class Login extends React.PureComponent<any, any> {
-  constructor(props: any) {
+interface LoginProps {
+  user: {
+    userId: string;
+  };
+}
+
+export default class Login extends React.Component<LoginProps, any> {
+  constructor(props: LoginProps) {
     super(props);
 
     this.state = {
@@ -27,7 +33,6 @@ export default class Login extends React.PureComponent<any, any> {
     this.setState({
       [event.target.id]: event.target.value,
     });
-    console.log(this.state);
   };
 
   handleSubmit = (event: any) => {
@@ -42,8 +47,9 @@ export default class Login extends React.PureComponent<any, any> {
       body: JSON.stringify({
         email: this.state.email,
         password: this.state.password,
+        client_id: this.props.user.userId,
       }),
-    });
+    }).then(value => {});
   };
 
   render() {

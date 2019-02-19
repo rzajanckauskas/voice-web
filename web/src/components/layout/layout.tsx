@@ -158,6 +158,7 @@ class Layout extends React.PureComponent<LayoutProps, LayoutState> {
 
     return (
       <div id="main" className={className}>
+        <h1>session id: {user.userId}</h1>
         {isIOS() && !isNativeIOS() && !isSafari() && (
           <div
             id="install-app"
@@ -201,7 +202,11 @@ class Layout extends React.PureComponent<LayoutProps, LayoutState> {
           </div>
           <div>
             {this.renderTallies()}
-            {user.account ? <UserMenu /> : isBuildingProfile ? null : <Login />}
+            {user.account ? (
+              <UserMenu />
+            ) : isBuildingProfile ? null : (
+              <Login user={user} />
+            )}
             {LOCALES.length > 1 && (
               <LocalizationSelect
                 locale={locale}
@@ -276,7 +281,7 @@ class Layout extends React.PureComponent<LayoutProps, LayoutState> {
                       <LinkButton rounded href="/logout" />
                     </Localized>
                   ) : (
-                    <Login />
+                    <Login user={user} />
                   )}
                 </React.Fragment>
               )}

@@ -7,6 +7,8 @@ import { getConfig } from '../../config-helper';
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { SECRET } = getConfig();
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 const db = getMySQLInstance();
 
@@ -122,7 +124,7 @@ const UserClient = {
               'age',
               'email',
               'gender',
-              'password',
+              'hash',
               'basket_token',
               'skip_submission_feedback',
               'visible',
@@ -163,14 +165,7 @@ const UserClient = {
       Object.entries({
         has_login: true,
         email,
-        ...pick(
-          data,
-          'age',
-          'gender',
-          'username',
-          'skip_submission_feedback',
-          'visible'
-        ),
+        ...pick(data, 'age', 'gender', 'skip_submission_feedback', 'visible'),
       }).map(async ([key, value]) => key + ' = ' + (await db.escape(value)))
     );
     await db.query(
@@ -190,29 +185,54 @@ const UserClient = {
     return UserClient.findAccount(email);
   },
 
-  async save({ client_id, email, age, gender }: any): Promise<boolean> {
+  async save({
+    client_id,
+    email,
+    age,
+    gender,
+    password,
+  }: any): Promise<boolean> {
     const [[row]] = await db.query(
       'SELECT has_login FROM user_clients WHERE client_id = ?',
       [client_id]
     );
 
-    if (row && row.has_login) return false;
+    const hash = this.getPasswordHash(password);
 
     if (row) {
       await db.query(
         `
-        UPDATE user_clients SET email  = ?, age  = ?, gender = ? WHERE client_id = ?
+        UPDATE user_clients SET email  = ?, age  = ?, gender = ?, hash = ?, has_login = ?, visible = ? WHERE client_id = ?
       `,
-        [email, age, gender, client_id]
+        [email, age, gender, hash, 1, 1, client_id]
       );
     } else {
       await db.query(
         `
-        INSERT INTO user_clients (client_id, email, age, gender) VALUES (?, ?, ?, ?)
+        INSERT INTO user_clients (client_id, email, age, gender, hash, has_login) VALUES (?, ?, ?, ?, ?, ?, ?)
       `,
-        [client_id, email, age, gender]
+        [client_id, email, age, gender, hash, 1]
       );
     }
+
+    this.createUserIfNeeded(email);
+
+    return true;
+  },
+
+  async createUserIfNeeded(email: string) {
+    const [[row]] = await db.query('SELECT 1 FROM users WHERE email = ?', [
+      email,
+    ]);
+    if (row) {
+      return false;
+    }
+    await db.query(
+      `
+        INSERT INTO users (email) VALUES (?)
+      `,
+      [email]
+    );
   },
 
   async updateBasketToken(email: string, basketToken: string) {
@@ -276,18 +296,12 @@ const UserClient = {
     ]);
   },
 
-  setPassword(password: string) {
-    this.salt = crypto.randomBytes(16).toString('hex');
-    this.hash = crypto
-      .pbkdf2Sync(password, this.salt, 10000, 512, 'sha512')
-      .toString('hex');
+  getPasswordHash(password: string): string {
+    return bcrypt.hashSync(password, saltRounds);
   },
 
-  validatePassword(user: UserClient, password: string): boolean {
-    const hash = crypto
-      .pbkdf2Sync(password, user.salt, 10000, 512, 'sha512')
-      .toString('hex');
-    return user.hash === hash;
+  passwordIsValid(user: { hash: string }, password: string): boolean {
+    return bcrypt.compareSync(password, user.hash);
   },
 
   generateJWT() {

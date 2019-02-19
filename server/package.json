@@ -18,6 +18,7 @@
     "@types/redlock": "^3.0.2",
     "@types/request-promise-native": "^1.0.14",
     "aws-sdk": "^2.388.0",
+    "bcrypt": "^3.0.4",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.18.3",
     "common": "*",

@@ -9,12 +9,12 @@ services:
       - MYSQL_USER=voicecommons
       - MYSQL_PASSWORD=voicecommons
       - MYSQL_ROOT_PASSWORD=voicewebroot
-  s3proxy:
-    image: andrewgaul/s3proxy
-    networks:
-      - voice-web
-    environment:
-      - S3PROXY_AUTHORIZATION=none
+  #  s3proxy:
+  #    image: andrewgaul/s3proxy
+  #    networks:
+  #      - voice-web
+  #    environment:
+  #      - S3PROXY_AUTHORIZATION=none
   web:
     build:
       context: .

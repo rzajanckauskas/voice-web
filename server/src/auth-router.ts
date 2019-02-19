@@ -1,13 +1,14 @@
 import { AES, enc } from 'crypto-js';
-const LocalStrategy = require('passport-local');
 import { Request, Response } from 'express';
-const PromiseRouter = require('express-promise-router');
 import * as session from 'express-session';
-const MySQLStore = require('express-mysql-session')(session);
 import * as passport from 'passport';
 import UserClient from './lib/model/user-client';
 import { getConfig } from './config-helper';
 import * as express from 'express';
+import { getMySQLInstance } from './lib/model/db/mysql';
+const LocalStrategy = require('passport-local');
+const PromiseRouter = require('express-promise-router');
+const MySQLStore = require('express-mysql-session')(session);
 const bodyParser = require('body-parser');
 
 const {
@@ -21,6 +22,8 @@ const {
 } = getConfig();
 
 const router = PromiseRouter();
+
+const db = getMySQLInstance();
 
 router.use(require('cookie-parser')());
 router.use(
@@ -68,35 +71,39 @@ passport.use(
       passwordField: 'password',
       passReqToCallback: true,
     },
-    (req: Request, email: string, password: string, done: any) => {
-      if (!email || !password) {
-        return done(null, false);
-      }
+    async (req: Request, email: string, password: string, done: any) => {
+      let user = null;
 
-      var salt =
-        'FEP`3s2^:E0DV(Mcz&=k:q3qD|9<_r^F0ETonL >EE{ rjc#Ga1E0p8z7pX.XO|?';
-
-      UserClient.findAccount(email)
-        .then(user => {
-          if (!user || !UserClient.validatePassword(user, password)) {
-            return done(null, false, {
-              errors: { 'email or password': 'is invalid' },
-            });
+      await db.query(
+        "SELECT * FROM `user_clients` WHERE `email` = '" + email + "'",
+        function(err: any, rows: any) {
+          if (err) return done(err);
+          if (!rows.length) {
+            done({ type: 'email', message: 'No such user found' }, false);
+            return;
           }
 
-          return done(null, user);
-        })
-        .catch(done);
+          // if the user is found but the password is wrong
+          if (!UserClient.passwordIsValid(rows[0], password)) {
+            done(
+              { type: 'loginMessage', message: 'Oops! Wrong password.' },
+              false
+            );
+          }
+
+          // all is well, return successful user
+          return done(null, rows[0]);
+        }
+      );
     }
   )
 );
 
 //register
 router.post('/register', (req: Request, res: Response) => {
-  console.log(req.body.email);
-  const user = req.body;
+  const { client_id, email, password } = req.body;
 
-  if (!user.email) {
+  if (!email) {
     return res.status(422).json({
       errors: {
         email: 'is required',
@@ -104,7 +111,7 @@ router.post('/register', (req: Request, res: Response) => {
     });
   }
 
-  if (!user.password) {
+  if (!password) {
     return res.status(422).json({
       errors: {
         password: 'is required',
@@ -112,34 +119,34 @@ router.post('/register', (req: Request, res: Response) => {
     });
   }
 
-  // const finalUser = new UserClient(user);
-
-  // finalUser.setPassword(user.password);
-
-  // return finalUser.saveAccount()
-  //     .then(() => res.json({ user: finalUser.toAuthJSON() }));
+  const finalUser = UserClient.save({
+    client_id,
+    email,
+    age: '',
+    gender: 'm',
+    password,
+  }).then(result => {
+    if (result) {
+      const user = UserClient.findAccount(email).then(user => {
+        res.json(user);
+      });
+    }
+  });
 });
 
-router.post(
-  '/signin',
-  passport.authenticate('local', {
-    successRedirect: '/profile',
-    failureRedirect: '/login',
-    failureFlash: false,
-  }),
-  function(req: Request, res: Response, info: any) {
-    console.log(res.statusMessage);
-    info();
-  }
-);
+router.post('/login', (req: Request, res: Response) => {
+  const { client_id, email, password } = req.body;
 
-router.post('/login', (request: Request, response: Response) => {
-  console.log(request.body);
   passport.authenticate('local', {
-    successRedirect: '/',
-    failureRedirect: '/login',
-    failureFlash: false,
-  } as any)(request, response);
+    // successRedirect: '/profile',
+    // failureRedirect: '/login',
+    // failureFlash: false,
+  }),
+    function(req: Request, res: Response, info: any) {
+      console.log(res.statusMessage);
+      console.log(req.user);
+      res.json(req.user.toAuthJSON());
+    };
 });
 
 router.get('/logout', (request: Request, response: Response) => {

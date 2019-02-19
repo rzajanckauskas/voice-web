@@ -7,7 +7,7 @@ export const up = async function(db: any): Promise<any> {
         client_id CHAR(36) NOT NULL,
         created_at DATETIME DEFAULT now(),
         FOREIGN KEY (sentence_id) REFERENCES sentences (id),
-        FOREIGN KEY (client_id) REFERENCES user_clients (client_id)
+        FOREIGN KEY (client_id) REFERENCES user_clients (client_id) ON DELETE CASCADE
       );
     `
   );

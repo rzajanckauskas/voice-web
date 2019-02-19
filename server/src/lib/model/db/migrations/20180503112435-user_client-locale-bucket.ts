@@ -6,7 +6,7 @@ export const up = async function(db: any): Promise<any> {
         locale_id SMALLINT UNSIGNED NOT NULL,
         bucket ENUM ('train', 'dev', 'test') DEFAULT 'train',
         PRIMARY KEY (client_id, locale_id),
-        FOREIGN KEY (client_id) REFERENCES user_clients(client_id),
+        FOREIGN KEY (client_id) REFERENCES user_clients(client_id) ON DELETE CASCADE,
         FOREIGN KEY (locale_id) REFERENCES locales(id)
       );
     `
