@@ -12,6 +12,10 @@ import { ClientParameterError } from './utility';
 
 const Transcoder = require('stream-transcoder');
 
+var path = require('path');
+var fs = require('fs');
+var audiopath = path.join(__dirname, '../../..', 'web', 'audio');
+
 const SALT = '8hd3e8sddFSdfj';
 
 export const hash = (str: string) =>
@@ -111,24 +115,55 @@ export default class Clip {
       throw new ClientParameterError();
     }
 
+    const transcoder = this.getTranscoderObject(request);
+
     // Where is our audio clip going to be located?
-    const folder = client_id + '/';
-    const filePrefix = headers.sentence_id;
-    const clipFileName = folder + client_id + '_' + filePrefix + '.mp3';
-    const sentenceFileName = folder + filePrefix + '.txt';
+    const localFolder = path.join(audiopath, client_id);
+    const sentenceId = headers.sentence_id;
+    const fullPath = localFolder + path.sep + sentenceId + '.wav';
 
-    // if the folder does not exist, we create it
-    await this.s3
-      .putObject({ Bucket: getConfig().BUCKET_NAME, Key: folder })
-      .promise();
+    this.createDirIfNotExist(audiopath);
+    this.createDirIfNotExist(localFolder);
+    this.deleteFileIfExists(fullPath);
 
+    const clipModel = this.model;
+
+    transcoder
+      .format('wav')
+      .audioCodec('pcm_s16le')
+      .sampleRate(16000)
+      .channels(1)
+      .on('finish', () => {
+        fs.chmodSync(fullPath, '777');
+        clipModel
+          .saveClip({
+            client_id: client_id,
+            locale: params.locale,
+            original_sentence_id: sentenceId,
+            path: fullPath,
+            sentence,
+            sentenceId: sentenceId,
+          })
+          .then(() => {
+            response.json(sentenceId);
+          });
+      })
+      .on('error', (e: any) => {
+        throw new Error(e);
+      })
+      .writeToFile(fullPath);
+  };
+
+  getTranscoderObject = (request: Request) => {
     // If upload was base64, make sure we decode it first.
+    const { headers } = request;
     let transcoder;
+
     if ((headers['content-type'] as string).includes('base64')) {
       // If we were given base64, we'll need to concat it all first
       // So we can decode it in the next step.
       const chunks: Buffer[] = [];
-      await new Promise(resolve => {
+      new Promise(resolve => {
         request.on('data', (chunk: Buffer) => {
           chunks.push(chunk);
         });
@@ -142,39 +177,21 @@ export default class Clip {
       // For non-base64 uploads, we can just stream data.
       transcoder = new Transcoder(request);
     }
+    return transcoder;
+  };
 
-    await Promise.all([
-      this.s3
-        .upload({
-          Bucket: getConfig().BUCKET_NAME,
-          Key: clipFileName,
-          Body: transcoder
-            .audioCodec('mp3')
-            .format('mp3')
-            .stream(),
-        })
-        .promise(),
-      this.s3
-        .putObject({
-          Bucket: getConfig().BUCKET_NAME,
-          Key: sentenceFileName,
-          Body: sentence,
-        })
-        .promise(),
-    ]);
+  createDirIfNotExist = (path: string) => {
+    if (!fs.existsSync(path)) {
+      fs.mkdirSync(path);
+      fs.chmodSync(path, '777');
+    }
+  };
 
-    console.log('file written to s3', clipFileName);
-
-    await this.model.saveClip({
-      client_id: client_id,
-      locale: params.locale,
-      original_sentence_id: filePrefix,
-      path: clipFileName,
-      sentence,
-      sentenceId: headers.sentence_id,
-    });
-
-    response.json(filePrefix);
+  deleteFileIfExists = (path: string) => {
+    if (fs.existsSync(path)) {
+      fs.unlinkSync(path);
+      console.log('deleted repeated file ' + path);
+    }
   };
 
   serveRandomClips = async (
