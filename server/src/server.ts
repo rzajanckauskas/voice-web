@@ -17,6 +17,7 @@ import { getElapsedSeconds, ClientError, APIError } from './lib/utility';
 import { importSentences } from './lib/model/db/import-sentences';
 import { getConfig } from './config-helper';
 import authRouter from './auth-router';
+import streamRouter from './stream-router';
 import fetchLegalDocument from './fetch-legal-document';
 
 const consul = require('consul')({ promisify: true });
@@ -68,15 +69,17 @@ export default class Server {
     });
 
     app.use(authRouter);
+    app.use(streamRouter);
+
     app.use('/api/v1', this.api.getRouter());
 
     const staticOptions = {
-      setHeaders: (response: express.Response) => {
+      /*setHeaders: (response: express.Response) => {
         // Only use CSP locally. In production, Apache handles CSP headers.
         // See path: nubis/puppet/web.pp
         !getConfig().PROD &&
           response.set('Content-Security-Policy', CSP_HEADER);
-      },
+      },*/
     };
 
     app.use(express.static(FULL_CLIENT_PATH, staticOptions));

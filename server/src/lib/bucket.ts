@@ -40,24 +40,16 @@ export default class Bucket {
     try {
       return await Promise.all(
         clips.map(async ({ id, path, sentence }) => {
-          // We get a 400 from the signed URL without this request
-          await this.s3
-            .headObject({
-              Bucket: getConfig().BUCKET_NAME,
-              Key: path,
-            })
-            .promise();
-
           return {
             id,
-            glob: path.replace('.mp3', ''),
+            glob: path,
             text: sentence,
-            sound: this.getPublicUrl(path),
+            sound: 'http://localhost:9000/stream?file=' + path,
           };
         })
       );
     } catch (e) {
-      console.log('aws error', e, e.stack);
+      console.log('file stream error', e, e.stack);
       return [];
     }
   }

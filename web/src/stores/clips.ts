@@ -3,7 +3,7 @@ const contributableLocales = require('../../../locales/contributable.json') as s
 import StateTree from './tree';
 import { User } from './user';
 
-const MIN_CACHE_SIZE = 10;
+const MIN_CACHE_SIZE = 20;
 
 export namespace Clips {
   export interface Clip {
