@@ -347,48 +347,6 @@ class LanguagesPage extends React.PureComponent<Props, State> {
               </Localized>
             )}
           </section>
-
-          <section className="in-progress">
-            <div className="md-block">
-              <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <h1 style={{ marginRight: '1.5rem' }}>
-                  {getString('language-section-in-progress')}
-                  {inProgressCountLabel}
-                </h1>
-              </div>
-              <Hr />
-            </div>
-
-            <Localized id="language-section-in-progress-description">
-              <p />
-            </Localized>
-            <ul>
-              {inProgress.length > 0
-                ? (query || showAllInProgress
-                    ? filteredInProgress
-                    : filteredInProgress.slice(0, 3)
-                  ).map((localization, i) => (
-                    <LocalizationBox
-                      key={localization.locale}
-                      localeMessages={localeMessages}
-                      type="in-progress"
-                      {...localization}
-                    />
-                  ))
-                : [1, 2, 3].map(i => <LoadingLocalizationBox key={i} />)}
-            </ul>
-
-            {!query && (
-              <Localized
-                id={'languages-show-' + (showAllInProgress ? 'less' : 'more')}>
-                <button
-                  disabled={inProgress.length === 0}
-                  className="show-all-languages"
-                  onClick={this.toggleShowAllInProgress}
-                />
-              </Localized>
-            )}
-          </section>
         </div>
       </div>
     );

@@ -76,30 +76,7 @@ class RegisterSection extends React.Component<{}, RegisterState> {
     return (
       <section className="register-section">
         <div className="top">
-          <div className="cta-container">
-            <Localized id="help-make-dataset">
-              <h1 />
-            </Localized>
-            <Localized id="profile-not-required">
-              <h2 />
-            </Localized>
-            <Localized id="sign-up-account">
-              <LinkButton
-                rounded
-                href="/login"
-                onClick={() => trackHome('click-benefits-register')}
-              />
-            </Localized>
-            {info}
-          </div>
-          <div className="images-container">
-            <img className="mars" src="/img/mars.svg" alt="Mars" />
-            <img
-              className="screenshot"
-              src={`/img/screenshots/${isBenefits ? 1 : 2}-${index + 1}.png`}
-              alt=""
-            />
-          </div>
+          <div className="cta-container" />
         </div>
       </section>
     );
@@ -179,53 +156,6 @@ class HomePage extends React.Component<PropsFromState, State> {
             )
           }
         />
-
-        <div className="text">
-          <div className="inner">
-            <div className="title">
-              <Localized id="home-title">
-                <h1 />
-              </Localized>
-            </div>
-
-            <div className="description">
-              <Localized id="wall-of-text-first">
-                <p />
-              </Localized>
-
-              <br />
-
-              <Localized id="wall-of-text-second">
-                <p />
-              </Localized>
-
-              <br />
-
-              {showWallOfText && (
-                <React.Fragment>
-                  <Localized id="wall-of-text-more-desktop">
-                    <p />
-                  </Localized>
-                  <br />
-                </React.Fragment>
-              )}
-
-              <Localized
-                id={
-                  showWallOfText ? 'languages-show-less' : 'show-wall-of-text'
-                }>
-                <button
-                  className="show-more"
-                  type="button"
-                  onClick={() => {
-                    this.setState({ showWallOfText: !showWallOfText });
-                    trackHome('read-more', locale);
-                  }}
-                />
-              </Localized>
-            </div>
-          </div>
-        </div>
 
         <div className="stats" ref={this.statsRef}>
           <ClipsStats.Root />

@@ -14,12 +14,12 @@ export default ({ children, ...props }: { [key: string]: any }) => (
           <LocaleNavLink to={URLS.SPEAK} exact />
         </Localized>
       </ContributableLocaleLock>
-      <Localized id="datasets">
+      {/*<Localized id="datasets">
         <LocaleNavLink to={URLS.DATASETS} exact />
       </Localized>
       <Localized id="languages">
         <LocaleNavLink to={URLS.LANGUAGES} exact />
-      </Localized>
+      </Localized>*/}
     </div>
     {children}
   </nav>
